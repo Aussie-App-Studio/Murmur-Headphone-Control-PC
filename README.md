@@ -4,6 +4,11 @@
 
 Normally, headphone apps only exist on your phone, or force you to create an account just to change Noise Cancelling or tweak your EQ. **Murmur** is a tiny (**4.55 MB**) Windows app that puts your headphones' real controls straight on your desktop and in your system tray.
 
+### [⬇️ Download Murmur for Windows (`murmur.exe`)](https://github.com/Aussie-App-Studio/Murmur-Headphone-Control-PC/releases/latest/download/murmur.exe)
+
+*Windows 10 / 11 · 4.55 MB · Single file, no installer needed · [View all releases](https://github.com/Aussie-App-Studio/Murmur-Headphone-Control-PC/releases/latest)*  
+*(If Windows shows a SmartScreen prompt because this is a new indie app, click **More info → Run anyway**.)*
+
 ## What You Can Do
 - **Noise Cancelling & Ambient Sound:** Switch modes or fine-tune how much outside sound comes in, with one-click voice focus and quick presets.
 - **Equalizer & Bass:** Pick from built-in sound presets or drag the sliders yourself to save your own sound profiles.
