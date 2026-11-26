@@ -1,27 +1,48 @@
 # Murmur — Headphone Control for PC
 
-**Strictly offline native Windows headphone control written in Rust.**
+**Control your Bluetooth headphones right from Windows — no sign-in, no internet, and no bulky background software.**
 
-No Electron, no WebView2, no accounts, and no background cloud telemetry — compiled into a single **4.55 MB** standalone Windows executable with a hardware-accelerated OpenGL 3D showcase and a system tray quick controller.
+Normally, headphone apps only exist on your phone, or force you to create an account just to change Noise Cancelling or tweak your EQ. **Murmur** is a tiny (**4.55 MB**) Windows app that puts your headphones' real controls straight on your desktop and in your system tray.
 
-## Features
-- **3D PBR Headphone Showcase:** Procedural over-ear (`WH-1000XM`) and earbud (`WF-1000XM`) 3D meshes lit with Cook-Torrance GGX shading, ACES tone mapping, drag-to-spin inertia, custom finish swatches, and mode-reactive studio aura.
-- **Full Native Bluetooth Protocol Support (Windows RFCOMM):**
-  - **Sony MDR V2** (`WH-1000XM6`, `WH-1000XM5`, `WH-1000XM4`, `WF-1000XM5`, `WF-1000XM4`, `ULT WEAR`, `WH-CH720N`, `LinkBuds S`, etc.) — Acoustic Control (ANC / Ambient / Off + Focus on Voice + 20-step precision scrubber), 5/8/10-band Equalizer + Clear Bass, Speak-to-Chat, DSEE Extreme, Multipoint audio switching, Touch Controls, Wear Detection, Auto Power-Off, NC/AMB Button Cycle.
-  - **Sony MDR V1** (`WH-1000XM3`, `WH-1000XM2`, `WH-H900N`, `MDR-1000X`, etc.)
-  - **Bose BMAP** (`QC45`, `QC Ultra`, `NC 700`, `QC35 II`, `QC Earbuds`, etc.)
-  - **Anker Soundcore** (`Q30`, `Q35`, `Q45`, `Space One`, `Liberty 4`, etc.)
-  - **Samsung Galaxy Buds** (`Buds2`, `Buds2 Pro`, `Buds Pro`, `Buds Live`, `Buds FE`, `Buds3 Pro`, etc.)
-- **Apple AirPods & Beats Battery Monitor (Driverless BLE):**
-  - Passive Windows WinRT BLE watcher reads live Left / Right / Case battery percentages and charging status via Apple Continuity (`0x004C`) advertisements — no kernel driver, no Secure Boot changes, and no Windows Test Mode required.
-- **Offline Queue & Settings Vault:**
-  - Make changes while your headphones are off and Murmur automatically pushes queued settings on the next connection.
-  - Export and import `SettingsVaultSnapshot` JSON files directly compatible with **Murmur for Android**.
-- **Low-Overhead System Tray:**
-  - Minimize to tray on close for instant right-click ANC / Ambient / Off switching at **0% idle CPU/GPU**.
+## What You Can Do
+- **Noise Cancelling & Ambient Sound:** Switch modes or fine-tune how much outside sound comes in, with one-click voice focus and quick presets.
+- **Equalizer & Bass:** Pick from built-in sound presets or drag the sliders yourself to save your own sound profiles.
+- **Real Battery & Time Left:** See accurate battery percentages (including Left, Right, and Charging Case for earbuds) plus an estimate of how many hours are left.
+- **Quick One-Tap Switches:** Toggle **Speak-to-Chat**, **Wearing Detection** (auto-pause), **Touch Controls**, **Multipoint**, and **DSEE** upscaling without touching your phone.
+- **Change Settings Even When Offline:** Edit your settings anytime — Murmur saves them and applies them automatically next time your headphones connect.
+- **Sits Quietly in Your Tray:** Close the window to keep Murmur in your Windows taskbar tray (using **0% CPU** in the background) so you can switch Noise Cancelling on a call in one right-click.
+- **Dark & Light Modes:** Automatically matches Windows, with custom color finishes for the interactive 3D headphone view.
 
-## Building on Windows
+## Which Headphones Work?
+- **Full Control (Noise Cancelling, EQ, Battery & Smart Features):**
+  - **Sony:** WH-1000XM6, WH-1000XM5, WH-1000XM4, WH-1000XM3, WH-1000XM2, WF-1000XM5, WF-1000XM4, WF-1000XM3, ULT WEAR, WH-CH720N, LinkBuds S, and more.
+  - **Bose:** QuietComfort 45, QuietComfort Ultra, NC 700, QC35 II, QuietComfort Earbuds.
+  - **Anker Soundcore:** Life Q30, Q35, Q45, Space One, Liberty 4, and more.
+  - **Samsung Galaxy Buds:** Buds2, Buds2 Pro, Buds Pro, Buds Live, Buds FE, Buds3 Pro.
+- **Live Battery & Charging (Left / Right / Case %):**
+  - **Apple AirPods & Beats:** AirPods (1/2/3/4), AirPods Pro (1/2/3), AirPods Max, Powerbeats Pro, Beats Studio Pro, Beats Fit Pro, Beats Studio Buds/+, Beats Solo 4. *(Microsoft restricts active Noise Cancelling control over AirPods on Windows without kernel test-mode drivers, so Murmur keeps things safe and driver-free.)*
 
+## How to Use
+1. Connect your headphones to Windows as usual (**Windows Settings → Bluetooth & devices**).
+2. Open **Murmur** (`murmur.exe`) — it finds and connects to your headphones automatically.
+3. Have **Murmur on Android** too? Use **Save Vault / Export** to copy your exact favorite settings between your phone and PC with one JSON file.
+
+---
+
+## Technical Details & Developer Reference
+
+<details>
+<summary>Protocol Support, Architecture & Building from Source</summary>
+
+### Architecture
+- **Language & UI:** Pure Rust (`eframe` / `egui 0.31`, OpenGL via `glow 0.16` / `egui_glow`). Zero Electron, zero WebView2 runtime, single standalone binary (`~4.55 MB` with full LTO, `opt-level = "s"`, `strip = true`, `panic = "abort"`).
+- **3D Hardware Renderer:** Procedural over-ear (`WH-1000XM`) and dual-earbud (`WF-1000XM`) meshes lit with Cook-Torrance GGX PBR shaders and ACES tone mapping (`#version 330 core`), paced at 30 FPS passive / 60 FPS interactive drag and paused when minimized, unfocused, or in the tray (`0.0%` hidden CPU).
+- **Bluetooth Stack:**
+  - Native Windows WinSock RFCOMM (`AF_BTH` / `BTHPROTO_RFCOMM`) for Sony MDR V2 (Table 1 & 2) & MDR V1, Bose BMAP, Anker Soundcore, and Samsung Galaxy Buds.
+  - Driverless WinRT BLE Advertisement Watcher (`BluetoothLEAdvertisementWatcher`) decoding Apple Continuity Proximity Pairing (`0x004C`, `0x07 0x19`) payloads for AirPods & Beats battery/charging telemetry without kernel drivers or Secure Boot changes.
+  - Local offline queue (`PendingOfflineChanges`), EWMA battery drain calibration, and `SettingsVaultSnapshot` camelCase JSON parity with **Murmur for Android** stored in `%APPDATA%\Murmur`.
+
+### Build on Windows
 Requires Rust (`stable-msvc`) and Windows 10/11 SDK:
 
 ```powershell
@@ -29,4 +50,6 @@ cargo test
 cargo build --release
 ```
 
-The standalone binary outputs to `target\release\murmur.exe`.
+Outputs `target\release\murmur.exe`.
+
+</details>
